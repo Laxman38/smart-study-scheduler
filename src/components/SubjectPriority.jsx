@@ -6,8 +6,6 @@ const priorityColors = {
     Low: 'bg-green-100 text-green-700'
 };
 
-
-
 const SubjectPriority= () => {
     const [subjects, setSubjects] = useState([]);
     const [priority, setPriority] = useState('Medium');

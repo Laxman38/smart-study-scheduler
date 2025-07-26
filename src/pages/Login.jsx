@@ -10,7 +10,7 @@ function Login() {
         setForm({ ...form, [e.target.name]: e.target.value})
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const { name, email, password } = form;
 
@@ -19,10 +19,32 @@ function Login() {
             return;
         }
 
-        localStorage.setItem('user', JSON.stringify({name, email}));
-        localStorage.setItem('isLoggedIn', 'true');
+        try {
+            const res = await fetch('http://localhost:5000/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
 
-        navigate('/');
+            const data = await res.json();
+
+            if(!res.ok){
+                setError(data.msg || 'Login failed');
+                return;
+            }
+
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            navigate('/');
+            
+            if (data.bonusXP > 0) {
+                toast.success(`🔥 Daily Streak! You earned ${data.bonusXP} bonus XP!`);
+            }
+
+        } catch (err) {
+            setError('Server error, please try again later');
+            console.error(err);
+        }
     };
 
 
@@ -37,7 +59,7 @@ function Login() {
                     {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
                     <input
-                     type="name"
+                     type="text"
                      name="name"
                      placeholder="Full Name"
                      value={form.name}

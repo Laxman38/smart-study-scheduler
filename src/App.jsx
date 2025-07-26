@@ -9,29 +9,34 @@ import StudyPlan from './pages/Studyplan';
 import Signup from './pages/Signup';
 import Login from './pages/Login';
 import ProtectedRoute from './components/ProtectedRoute';
+import { ToastContainer } from 'react-toastify';
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="signup" element={<Signup/>} />
-        <Route path="login" element={<Login />} />
+    <div>
+      <BrowserRouter>
+        <Routes>
+          <Route path="signup" element={<Signup/>} />
+          <Route path="login" element={<Login />} />
 
-        <Route path="/" element={
-          <ProtectedRoute>
-            <Layout />
-          </ProtectedRoute>
-          }
-        >
-          <Route index element={<Dashboard />} />
-          <Route path="study-plan" element={<StudyPlan />} />
-          <Route path="calendar" element={<Calendar />} />
-          <Route path="pomodoro" element={<Pomodoro />} />
-          <Route path="progress" element={<Progress />} />
-          <Route path="settings" element={<Settings />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+          <Route path="/" element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+            }
+          >
+
+            <Route index element={<Dashboard />} />
+            <Route path="study-plan" element={<StudyPlan />} />
+            <Route path="calendar" element={<Calendar />} />
+            <Route path="pomodoro" element={<Pomodoro />} />
+            <Route path="progress" element={<Progress />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+      <ToastContainer position='top-center'/>
+    </div>
   );
 }
 

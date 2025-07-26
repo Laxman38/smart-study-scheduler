@@ -24,15 +24,27 @@ const CalendarView = ({ tasks }) => {
     const [events, setEvents] = useState([]);
 
     useEffect(() => {
-        const savedTasks = tasks && tasks.length ? tasks : JSON.parse(localStorage.getItem('studyTasks')) || [];
+      const fetchTasks = async () => {
+        const token = localStorage.getItem('token');
+        if(!token) return;
 
-        const mappedEvents = savedTasks.map((task) => ({
+        const res = await fetch('http://localhost:5000/api/tasks/all', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const data = await res.json();  
+
+        const mappedEvents = data.map((task) => ({
             title: `${ task.subject } (${ task.priority })`,
             start: new Date(task.datetime),
             end: new Date(new Date(task.datetime).getTime() + 60 * 60 * 1000),
         }));
 
         setEvents(mappedEvents);
+      };
+
+      fetchTasks();
+
     }, [tasks]);
 
   return (

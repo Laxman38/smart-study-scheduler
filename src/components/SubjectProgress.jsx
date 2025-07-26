@@ -7,23 +7,34 @@ const SubjectProgress = () => {
     const [data, setData] = useState([]);
 
     useEffect(() => {
-        const tasks = JSON.parse(localStorage.getItem('studyTasks')) || [];
+        const fetchTasks = async () => {
+            const token = localStorage.getItem('token');
+            if(!token) return;
 
-        const subjectMap = {};
+            const res = await fetch('http://localhost:5000/api/tasks/all', {
+                headers: { Authorization: `Bearer ${token}` } 
+            });
+            
+            const tasks = await res.json();
 
-        tasks.forEach((task) => {
-            const { subject } = task;
-            if(subject) {
-                subjectMap[subject] = (subjectMap[subject] || 0) + 1;
-            }
-        });
+            const subjectMap = {};
 
-        const chartData = Object.entries(subjectMap).map(([subject, count]) => ({
-            subject,
-            pomodoros: count,
-        }));
+            tasks.forEach((task) => {
+                const { subject } = task;
+                if(subject) {
+                    subjectMap[subject] = (subjectMap[subject] || 0) + 1;
+                }
+            });
 
-        setData(chartData);
+            const chartData = Object.entries(subjectMap).map(([subject, count]) => ({
+                subject,
+                pomodoros: count,
+            }));
+
+            setData(chartData);
+        };
+
+        fetchTasks();
     }, []);
 
     return (

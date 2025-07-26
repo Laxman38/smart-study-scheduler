@@ -1,40 +1,86 @@
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 function GoalCards({ onGoalComplete }) {
     const [goals, setGoals] = useState([]);
     const [goalText, setGoalText] = useState('');
 
     useEffect(() => {
-        const storedGoals = localStorage.getItem('goals');
-        if(storedGoals) setGoals(JSON.parse(storedGoals));
+        const fetchGoals = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch('http://localhost:5000/api/goals',{
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if(!res.ok) throw new Error('Failed to fetch goals');
+                const data = await res.json();
+                setGoals(data);
+            } catch (err) {
+                console.error(err);
+                toast.error('⚠️ Could not load goals');
+            }
+        };
+        fetchGoals();
     }, []);
 
-    useEffect(() => {
-        localStorage.setItem('goals', JSON.stringify(goals));
-    }, [goals]);
-
-    const addGoal = () => {
-        if(!goalText.trim()) return;
-        const newGoal = {
-            id: Date.now(),
-            text: goalText,
-            completed: false,
-        };
-        setGoals([...goals, newGoal]);
-        setGoalText('');
+    const addGoal = async () => {
+        if (!goalText.trim()) return;
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch('http://localhost:5000/api/goals', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ text: goalText })
+            });
+            if(!res.ok) throw new Error('Failed to add goal');
+            const newGoal = await res.json();
+            setGoals([...goals, newGoal]);
+            setGoalText('');
+        } catch (err) {
+            console.error(err);
+            toast.error('❌ Could not add goal');
+        }
     };
 
-    const completeGoal = (id) => {
-        const updatedGoals = goals.map(goal =>
-            goal.id === id ? { ...goal, completed: true} : goal
-        );
-        setGoals(updatedGoals);
-        if(onGoalComplete) onGoalComplete();
+    const completeGoal = async (id) => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`http://localhost:5000/api/goals/${id}/complete`, {
+                method: 'PATCH',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if(!res.ok) throw new Error('Failed to complete goal');
+
+            const updatedGoals = goals.map(goal => 
+                goal.id === id ? { ...goal, completed: true } : goal
+            );
+            setGoals(updatedGoals);
+
+            if (onGoalComplete) onGoalComplete();
+        } catch (err) {
+            console.error(err);
+            toast.error("⚠️ Could not complete goal");
+        }
     };
 
-    const removeGoal = (id) => {
-        const updatedGoals = goals.filter(goal => goal.id !== id);
-        setGoals(updatedGoals);
+    const removeGoal = async (id) => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`http://localhost:5000/api/goals/${id}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if(!res.ok) throw new Error('Failed to delete goal');
+            const updatedGoals = goals.filter(goal => goal.id !== id);
+            setGoals(updatedGoals);
+        } catch (err) {
+            console.error(err);
+            toast.error("⚠️ Could not delete goal");
+        }
     };
 
     return (

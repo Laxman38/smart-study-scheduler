@@ -1,21 +1,61 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const Settings = () => {
     const navigate = useNavigate();
-    const [username, setUsername] = useState(() => {
-        const storedUser = JSON.parse(localStorage.getItem('user'));
-        return storedUser?.name || '';
-     });
-    const [avatar, setAvatar] = useState(localStorage.getItem('avatar') || '');
+    const [username, setUsername] = useState('');
+    const [avatar, setAvatar] = useState('');
 
-    const handleAvatarChange = (e) => {
+    useEffect(() => {
+        const fetchSettings = async () => {
+            const token = localStorage.getItem('token');
+            if(!token) return;
+
+            try {
+                const res = await fetch('http://localhost:5000/api/settings/getSettings', {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+
+                const data = await res.json();
+                if(res.ok) {
+                    setUsername(data.username || '');
+                    setAvatar(data.avatar || '');
+                    localStorage.setItem('avatar', data.avatar || '');
+                }
+                
+            } catch (err) {
+                console.error('Failed to fetch settings', err);
+            }
+        };
+
+        fetchSettings();    
+    }, []);
+
+    const handleAvatarChange = async (e) => {
         const file = e.target.files[0];
         const reader = new FileReader();
 
-        reader.onloadend = () => {
-            setAvatar(reader.result);
-            localStorage.setItem('avatar', reader.result);
+        reader.onloadend = async () => {
+            const base64Image = reader.result;
+            setAvatar(base64Image);
+            localStorage.setItem('avatar', base64Image);
+
+            const token = localStorage.getItem('token');
+            
+            try {
+                await fetch('http://localhost:5000/api/settings/updateSettings', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+
+                    body: JSON.stringify({ avatar: base64Image }),
+                });
+            } catch (err) {
+                console.error(err);
+            }
         };
 
         if(file) {
@@ -28,11 +68,27 @@ const Settings = () => {
         navigate('/login');
     };
 
-    const handleNameChange = () => {
-        const user = JSON.parse(localStorage.getItem('user')) || {};
-        user.name = username;
-        localStorage.setItem('user', JSON.stringify(user));
-        alert('Username updated');
+    const handleNameChange = async () => {
+        const token = localStorage.getItem('token');
+        if(!token) return;
+
+        const res = await fetch('http://localhost:5000/api/settings/updateSettings', {
+            method: 'PUT',
+            headers: {
+                'Content-type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
+
+            body: JSON.stringify({ username })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            toast.success('Username updated');
+            localStorage.setItem('user', JSON.stringify({ name: data.user.username }));
+        } else {
+            toast.error(data.msg || 'Error updating username');
+        }
     };
 
     const handleReset = () => {
@@ -58,9 +114,23 @@ const Settings = () => {
                                 className="w-20 h-20 rounded-full object-cover shadow border border-gray-300"
                             />
                             <button
-                                onClick={() => {
+                                onClick={async () => {
                                     setAvatar('');
                                     localStorage.removeItem('avatar');
+
+                                    const token = localStorage.getItem('token');
+                                    try {
+                                        await fetch('http://localhost:5000/api/settings/updateSettings', {
+                                            method: 'PUT',
+                                            headers: {
+                                                'Content-type': 'application/json',
+                                                Authorization: `Bearer ${token}`
+                                            },
+                                            body: JSON.stringify({ avatar: '' })
+                                        });
+                                    } catch (err) {
+                                        console.error('Error clearing avatar', err);
+                                    }
                                 }}
                                 title="Remove avatar"
                                 className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center text-white text-xl hover:bg-black/60 transition"

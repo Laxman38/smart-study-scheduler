@@ -4,15 +4,26 @@ const TodayTasks = () => {
     const [todayTasks, setTodayTasks] = useState([]);
 
     useEffect(() => {
-        const tasks = JSON.parse(localStorage.getItem('studyTasks')) || [];
+        const fetchTasks = async () => {
+            const token = localStorage.getItem('token');
+            if(!token) return;
 
-        const today = new Date().toISOString().split('T')[0];
+            const res = await fetch('http://localhost:5000/api/tasks/all', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            const data = await res.json();
+            const today = new Date().toISOString().split('T')[0];
 
-        const filtered = tasks.filter((task) => {
-            return task.datetime?.startsWith(today);
-        });
+            const filtered = data.filter(task => {
+                const taskDate =  new Date(task.datetime).toISOString().split('T')[0];
+                return taskDate === today;
+            });
 
-        setTodayTasks(filtered);
+            setTodayTasks(filtered);
+        };
+
+        fetchTasks();
     }, []);
 
     return (

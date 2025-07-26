@@ -2,16 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-function PomodoroTimer({ onComplete }) {
+function PomodoroTimer({ onComplete, onEarnXP }) {
     const focusTime = 25 * 60;
-    const breakTime = 5 * 60;
+    const breakTime = 25 * 60;
 
     const [secondsLeft, setSecondsLeft] = useState(focusTime);
     const [isRunning, setIsRunning] = useState(false);
     const [isFocusSession, setIsFocusSession] = useState(true);
     const intervalRef = useRef(null);
-    const [xp, setXp] = useState(0);
-    const [badges, setBadges] = useState([]);
     const [pomodoroCount, setPomodoroCount] = useState(0);
 
     useEffect(() => {
@@ -32,7 +30,7 @@ function PomodoroTimer({ onComplete }) {
         }
 
         return () => clearInterval(intervalRef.current);
-    }, [isRunning, setIsFocusSession]);
+    }, [isRunning]);
 
     const formatTime = (secs) => {
         const minutes = Math.floor(secs / 60);
@@ -54,13 +52,22 @@ function PomodoroTimer({ onComplete }) {
     };
 
     const handleTimerEnd = () => {
-        toast.success('⏱️ Pomodoro session complete!');
+        setTimeout(() => {
+            toast.success('⏱️ Pomodoro session complete!');  
+        }, 0);
         if(onComplete) onComplete();
     };
 
     const handlePomodoroComplete = () =>{
         setPomodoroCount(p => p + 1);
-        earnXP(50);
+        
+        if(onEarnXP) {
+            setTimeout(() => {
+                onEarnXP(50);
+            }, 0);
+        }
+
+        window.dispatchEvent(new Event('xpUpdated'));
 
         const today = new Date().toISOString().split('T')[0];
         const stored = JSON.parse(localStorage.getItem('progress')) || {};
@@ -74,30 +81,24 @@ function PomodoroTimer({ onComplete }) {
         
 
         localStorage.setItem('progress', JSON.stringify(stored));
+
+        const token = localStorage.getItem('token');
+        if(token) {
+            fetch('http://localhost:5000/api/progress/pomodoro', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
+            }).catch(err => console.error('Pomodoro update failed:', err));
+        }
     };
-
-    const earnXP = (amount) => {
-        const newXP = xp + amount;
-        setXp(newXP);
-
-        const newBadges = [...badges];
-
-        if(newXP >= 500 && !newBadges.includes('💪 Dedicated Learner')){
-            newBadges.push('💪 Dedicated Learner');
-        }
-
-        if(newXP >= 1000 && !newBadges.includes('🏆 Study Master')){
-            newBadges.push('🏆 Study Master');
-        }
-
-        setBadges(newBadges);
-    }; 
 
     return (
         <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow text-center space-y-4">
 
             <h2 className="text-2xl ">
-                 ⏱️ Pomodoro Timer
+                ⏱️ Pomodoro Timer
             </h2>
 
             <div className="text-5xl font-mono text-gray-800">
@@ -120,8 +121,8 @@ function PomodoroTimer({ onComplete }) {
                 </button>
             </div>
 
-            <h5 className="text-2xl ">
-                { isFocusSession ? "Focus Time" : "Break Time" }
+            <h5 className={`text-2xl font-semibold ${isFocusSession ? 'text-blue-600' : 'text-green-600'}`}>
+                { isFocusSession ? "🎯Focus Time" : "☕Break Time" }
             </h5>
 
         </div>

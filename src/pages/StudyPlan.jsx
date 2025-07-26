@@ -1,18 +1,48 @@
 import { useEffect, useState } from "react";
 import StudyPlanEditor from "../components/StudyPlanEditor";
+import { toast } from "react-toastify";
 
 function StudyPlan() {
     const [studyTasks, setStudyTasks] = useState([]);
 
-    useEffect(() => {
-        const saved = JSON.parse(localStorage.getItem('studyTasks')) || [];
-        setStudyTasks(saved);
-    }, []);
+    const fetchTasks = async () => {
+        const token = localStorage.getItem('token');
+        if(!token) return;
 
-    const handleTaskSave = (task) => {
-        const updatedTasks = [...studyTasks, task];
-        setStudyTasks(updatedTasks);
-        localStorage.setItem('studyTasks',JSON.stringify(updatedTasks));
+        const res = await fetch('http://localhost:5000/api/tasks/all', {
+            headers: { Authorization: `Bearer ${token}` } 
+        });
+
+        const data = await res.json();
+        setStudyTasks(data);
+    };
+
+    useEffect(() => {
+        fetchTasks();
+    });
+
+    const handleTaskSave = async (task) => {
+       try {
+        const token = localStorage.getItem('token');
+        if(!token) return;
+
+        const res = await fetch('http://localhost:5000/api/tasks/save', {
+            method: 'POST',
+            headers: {
+                'Content-type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(task)
+        });
+
+        if(!res.ok) throw new Error('Failed to save task');
+        toast.success('Task saved successfully');
+        fetchTasks();
+
+       } catch (err) {
+        console.error('Error saving task:', err);
+        toast.error('Error saving task');
+       }
     };
 
     return (

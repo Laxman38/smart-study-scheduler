@@ -2,27 +2,45 @@ import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Line, LineChart } from "recharts";
 import dayjs from "dayjs";
 
-const getLast7Days = () => {
-    return Array.from({ length: 7}, (_, i) => 
-        dayjs().subtract(6 - i, 'day').format('YYYY-MM-DD')
-    );
-};
-
 function WeeklyCharts() {
     const [chartdata, setChartData] = useState([]);
 
-    useEffect(() =>{
-        const storedProgress = JSON.parse(localStorage.getItem('progress')) || {};
-        const data = getLast7Days().map(date => {
-            const day = dayjs(date).format('ddd');
-            const entry = storedProgress[date] || {};
-            return {
-                name: day,
-                Pomodoro: entry.pomodoro || 0,
-                Goals: entry.goals || 0,
-            };
-        });
-        setChartData(data);
+    useEffect(() => {
+        const fetchWeekly = async () => {
+            const token = localStorage.getItem('token');
+            if(!token) return;
+
+            try {
+                const res = await fetch('http://localhost:5000/api/progress/weekly', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                if(!res.ok) throw new Error('Failed to fetch weekly progress');
+                const data = await res.json();
+                console.log("Weekly backend data:", data);
+                console.log("🔍 Is array?", Array.isArray(data));
+
+                if(!Array.isArray(data)){
+                    console.error('Weekly progress is not an array');
+                    return;
+                }
+
+                const formatted = data.map(entry => ({
+                    name: dayjs(entry.date).format('ddd'),
+                    Pomodoro: entry.pomodoro,
+                    Goals: entry.goals
+                }));
+
+                setChartData(formatted);
+
+            } catch (err) {
+                console.error('Error fetching weekly progress', err);
+            }
+        };
+
+        fetchWeekly();
     }, []);
 
     return (

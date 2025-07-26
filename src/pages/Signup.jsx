@@ -10,7 +10,7 @@ function Signup () {
         setForm({ ...form, [e.target.name]: e.target.value})
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const { name, email, password } = form;
 
@@ -19,11 +19,29 @@ function Signup () {
             return;
         }
 
-        localStorage.setItem('user', JSON.stringify({name, email}));
-        localStorage.setItem('isLoggedIn', 'true');
+        try {
+            const res = await fetch('http://localhost:5000/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: name, email, password })
+            });
 
-        navigate('/');
-    }
+            const data = await res.json();
+
+            if(!res.ok){
+                setError(data.msg || 'Something went wrong');
+                return;
+            }
+
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            navigate('/');
+
+        } catch (err) {
+            setError('Server error, please try again later');
+            console.error(err);
+        }
+    };
 
     return (
         <div className="flex items-center justify-center h-screen bg-gray-50">

@@ -1,11 +1,28 @@
 import { useEffect, useState } from "react"
 
 function DashboardHeader ({ xp }) {
-    const [username, setUsername] = useState('Laxman');
+    const [username, setUsername] = useState(() => {
+        try{
+            const storedUser = JSON.parse(localStorage.getItem('user'));
+            return storedUser?.username || '';
+        } catch {
+            return '';
+        }
+     });
     const [level, setLevel] = useState(1);
     const [progressPercent, setProgressPercent] = useState(0);
 
     useEffect(() => {
+        const storedName = localStorage.getItem('user');
+        if(storedName) {
+            try {
+                const storedUser = JSON.parse(storedName);
+                setUsername(storedUser.username || '');
+            } catch (err) {
+                setUsername('');
+            }
+        }
+
         const calculatedLevel = Math.floor(xp / 100) + 1;
         const xpInCurrentLevel = xp % 100;
         const percent = Math.floor((xpInCurrentLevel / 100) * 100);
@@ -16,13 +33,6 @@ function DashboardHeader ({ xp }) {
 
     return (
         <div className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white p-6 rounded-xl shadow flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-            {/* <button
-                onClick={toggleSidebar}
-                className="bg-white text-blue-600 px-3 py-1 rounded shadow hover:bg-gray-100 sm:hidden"
-                title="Toggle Sidebar"
-            >
-                Toggle
-            </button> */}
 
             <div>
                 <h1 className="text-2xl font-bold">Hello, {username}! 👋</h1>
@@ -42,4 +52,4 @@ function DashboardHeader ({ xp }) {
     );
 }
 
-export default DashboardHeader
+export default DashboardHeader;

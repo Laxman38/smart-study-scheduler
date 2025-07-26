@@ -1,43 +1,56 @@
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
-const getToday= () => dayjs().format('YYYY-MM-DD');
+const getToday = () => dayjs().tz('Asia/Kolkata').format('YYYY-MM-DD');
 
-function ProgressTracker({pomodoroCount, goalCount, onStreakXP}) {
+function ProgressTracker({ pomodoroCount, refreshKey, onStreakXP }) {
     const[progress, setProgress] = useState({});
     const[streak, setStreak] = useState(0);
     const today = getToday();
 
     useEffect(() => {
-        const saved = JSON.parse(localStorage.getItem('progress')) || {};
-        setProgress(saved);
+        const getDailyProgress = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                if(!token) return;
 
-        let count = 0;
-        let date = dayjs();
-        while(saved[date.format('YYYY-MM-DD')]){
-            count++;
-            date = date.subtract(1, 'day');
-        }
-        setStreak(count);
+                const res = await fetch(`http://localhost:5000/api/progress/${today}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    }
+                });
 
-        if(count === 3 || count === 7 || count === 14){
-            onStreakXP(50);
-        }
-    }, []);
+                if(!res.ok) throw new Error('Failed to fetch profile');
+                const data = await res.json();
 
-    useEffect(() =>{
-        const updated = {
-            ...progress,
-            [today] : {
-                pomodoro : pomodoroCount,
-                goals : goalCount,
-            },
+                 console.log("✅ Progress from backend:", data);
+
+                const saved = JSON.parse(localStorage.getItem('progress')) || {};
+                saved[today] = {
+                    goals: data.goals || 0,
+                    pomodoro: data.pomodoro || 0,
+                };
+
+                localStorage.setItem('progress', JSON.stringify(saved));
+                setProgress(saved);
+                setStreak(data.streak || 0);   
+
+            } catch (err) {
+                console.error('Error fetching profile:', err);
+            }
         };
-        setProgress(updated);
-        localStorage.setItem('progress', JSON.stringify(updated));
-    }, [pomodoroCount, goalCount]);
+
+        getDailyProgress();
+        
+    }, [refreshKey, pomodoroCount]);
 
     const todayStats = progress[today] || { pomodoro: 0, goals: 0 };
+    console.log("Progress Today:", todayStats);
+
 
     return(
         <div className="bg-white p-4 rounded-lg shadow mt-6">

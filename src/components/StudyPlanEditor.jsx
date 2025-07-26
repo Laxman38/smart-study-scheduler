@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import { useState } from "react";
+import { toast } from "react-toastify";
 
 const StudyPlanEditor = ({ onSave }) => {
     const [subject, setSubject] = useState('');
@@ -13,7 +14,7 @@ const StudyPlanEditor = ({ onSave }) => {
     
 
         if( !date || !time || !subject || !priority){
-            alert("Subject, Priority, Date and Time are required!");
+            toast.error("Subject, Date and Time are required!");
             return;
         }
 
