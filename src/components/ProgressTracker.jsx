@@ -27,8 +27,6 @@ function ProgressTracker({ pomodoroCount, refreshKey, onStreakXP }) {
                 if(!res.ok) throw new Error('Failed to fetch profile');
                 const data = await res.json();
 
-                 console.log("✅ Progress from backend:", data);
-
                 const saved = JSON.parse(localStorage.getItem('progress')) || {};
                 saved[today] = {
                     goals: data.goals || 0,
@@ -49,8 +47,6 @@ function ProgressTracker({ pomodoroCount, refreshKey, onStreakXP }) {
     }, [refreshKey, pomodoroCount]);
 
     const todayStats = progress[today] || { pomodoro: 0, goals: 0 };
-    console.log("Progress Today:", todayStats);
-
 
     return(
         <div className="bg-white p-4 rounded-lg shadow mt-6">

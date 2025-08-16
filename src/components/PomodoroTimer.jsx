@@ -95,7 +95,7 @@ function PomodoroTimer({ onComplete, onEarnXP }) {
     };
 
     return (
-        <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow text-center space-y-4">
+        <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow text-center space-y-4 h-screen">
 
             <h2 className="text-2xl ">
                 ⏱️ Pomodoro Timer

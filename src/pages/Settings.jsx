@@ -99,7 +99,7 @@ const Settings = () => {
     };
 
     return (
-        <div className="max-w-xl mx-auto p-6 bg-white rounded-xl shadow space-y-6 mt-6">
+        <div className="max-w-xl mx-auto p-6 bg-white rounded-xl shadow space-y-6 mt-6 h-screen">
             <h2 className="text-2xl font-bold text-indigo-700">⚙️ Settings</h2>
 
             <div className="space-y-2">

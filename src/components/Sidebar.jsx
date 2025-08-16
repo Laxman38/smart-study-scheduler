@@ -19,7 +19,7 @@ const Sidebar = () => {
     ];
 
     return (
-        <div className="w-64 h-screen bg-blue-900 p-5 shadow-lg">
+        <div className="w-64 h-100 bg-blue-900 p-5 shadow-lg">
             <h2 className="text-2xl font-bold text-white mb-6">Smart Study Scheduler</h2>
             <nav className="flex flex-col gap-4">
                 {links.map(link =>(

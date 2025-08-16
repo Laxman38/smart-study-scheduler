@@ -49,6 +49,7 @@ function Signup () {
              onSubmit={handleSubmit}
              className="bg-white p-8 rounded-xl shadow-lg w-96"
             >
+                
                 <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
 
                 {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
@@ -75,6 +76,7 @@ function Signup () {
                  type="password"
                  name="password"
                  placeholder="Password"
+                 value={form.password}
                  onChange={handleChange}
                  className="w-full mb-4 px-4 py-2 border rounded"
                 />

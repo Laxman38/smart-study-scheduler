@@ -100,7 +100,6 @@ exports.getWeeklyProgress = async (req, res) => {
             };
         });
 
-        console.log("📦 Weekly data:", weekly);
         return res.json(weekly);
 
     } catch (err) {

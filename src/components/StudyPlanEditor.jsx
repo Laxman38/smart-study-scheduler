@@ -37,7 +37,7 @@ const StudyPlanEditor = ({ onSave }) => {
     };
 
     return (
-        <div className="bg-white p-6 rounded-xl shadow-md max-w-xl mx-auto mt-8">
+        <div className="bg-white p-6 rounded-xl shadow-md max-w-xl mx-auto mt-8 h-screen">
             <h2 className="text-xl font-bold text-indigo-700 mb-4">📝 Create Study Plan</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <input

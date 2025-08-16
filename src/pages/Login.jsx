@@ -1,20 +1,20 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 function Login() {
-    const [form,setForm] = useState({ name: '', email: '', password: ''});
-    const [error,setError] = useState('');
+    const [form, setForm] = useState({ name: '', email: '', password: '' });
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
     const handleChange = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value})
+        setForm({ ...form, [e.target.name]: e.target.value });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const { name, email, password } = form;
 
-        if( !name || !email || !password) {
+        if (!name || !email || !password) {
             setError('All fields are required');
             return;
         }
@@ -28,7 +28,7 @@ function Login() {
 
             const data = await res.json();
 
-            if(!res.ok){
+            if (!res.ok) {
                 setError(data.msg || 'Login failed');
                 return;
             }
@@ -36,7 +36,7 @@ function Login() {
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
             navigate('/');
-            
+
             if (data.bonusXP > 0) {
                 toast.success(`🔥 Daily Streak! You earned ${data.bonusXP} bonus XP!`);
             }
@@ -47,54 +47,59 @@ function Login() {
         }
     };
 
-
     return (
         <div className="flex items-center justify-center h-screen bg-gray-50">
             <form
-             onSubmit={handleSubmit}
-             className="bg-white p-8 rounded-xl shadow-lg w-96"
+                onSubmit={handleSubmit}
+                className="bg-white p-8 rounded-xl shadow-lg w-96"
             >
                 <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
 
-                    {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+                {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
-                    <input
-                     type="text"
-                     name="name"
-                     placeholder="Full Name"
-                     value={form.name}
-                     onChange={handleChange}
-                     className="w-full mb-4 px-4 py-2 border rounded"
-                    />
-                    
-                    <input
-                     type="email"
-                     name="email"
-                     placeholder="Email"
-                     value={form.email}
-                     onChange={handleChange}
-                     className="w-full mb-4 px-4 py-2 border rounded"
-                    />
+                <input
+                    type="text"
+                    name="name"
+                    placeholder="Full Name"
+                    value={form.name}
+                    onChange={handleChange}
+                    className="w-full mb-4 px-4 py-2 border rounded"
+                />
 
-                    <input
-                     type="password"
-                     name="password"
-                     placeholder="Password"
-                     value={form.password}
-                     onChange={handleChange}
-                     className="w-full mb-4 px-4 py-2 border rounded"
-                    />
+                <input
+                    type="email"
+                    name="email"
+                    placeholder="Email"
+                    value={form.email}
+                    onChange={handleChange}
+                    className="w-full mb-4 px-4 py-2 border rounded"
+                />
 
-                    <button
-                     type="submit"
-                     onSubmit={handleSubmit}
-                     className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-700 transition"
-                    >
-                        Log In
-                    </button>
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Password"
+                    value={form.password}
+                    onChange={handleChange}
+                    className="w-full mb-4 px-4 py-2 border rounded"
+                />
+
+                <button
+                    type="submit"
+                    className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-700 transition"
+                >
+                    Log In
+                </button>
+
+                <p className="text-sm text-center mt-4">
+                    New user?{" "}
+                    <Link to="/signup" className="text-blue-500 hover:underline">
+                        Sign up here
+                    </Link>
+                </p>
             </form>
         </div>
     );
-};
+}
 
 export default Login;

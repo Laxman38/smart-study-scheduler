@@ -2,7 +2,6 @@ const User = require('../models/User');
 
 exports.updateSettings = async (req, res) => {
     try {
-        console.log("Received update request:", req.body);
         const { username, avatar } = req.body;
 
         const user = await User.findById(req.user.id);

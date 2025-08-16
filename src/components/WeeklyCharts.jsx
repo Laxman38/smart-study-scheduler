@@ -19,8 +19,6 @@ function WeeklyCharts() {
 
                 if(!res.ok) throw new Error('Failed to fetch weekly progress');
                 const data = await res.json();
-                console.log("Weekly backend data:", data);
-                console.log("🔍 Is array?", Array.isArray(data));
 
                 if(!Array.isArray(data)){
                     console.error('Weekly progress is not an array');
